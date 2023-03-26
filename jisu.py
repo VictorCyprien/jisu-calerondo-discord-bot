@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
-import time
 import logging
+import asyncio
+import random
 
 import discord
 from discord.ext import commands, tasks
@@ -14,6 +15,8 @@ from helpers.functions_helpers import (
     send_msg_to_discord_channel
 )
 
+from helpers.status_jisu import status_jisu
+
 intents = discord.Intents.all()
 
 client = commands.Bot(
@@ -24,6 +27,14 @@ client = commands.Bot(
 
 logging.basicConfig(level = logging.INFO)
 
+async def change_status():
+    while True:
+        current_status = random.choice(status_jisu)
+        activity = discord.Activity(type=current_status[0], name=current_status[1])
+        await client.change_presence(status=discord.Status.online, activity=activity)
+        await asyncio.sleep(30)
+
+
 @client.event
 async def on_ready():
     await client.wait_until_ready()
@@ -33,12 +44,16 @@ async def on_ready():
         logging.info(f"Synced : {len(synced)} command(s) !")
     except Exception as e:
         logging.info(e)
+    client.loop.create_task(change_status())
 
 
 @client.tree.command(name="talk")
 async def talk(interaction: discord.Interaction):
     """ Talk to Jisu !
     """
+    if not interaction.guild:
+        await interaction.response.send_message("La femme à qui tu dis ?")
+        return
     await interaction.response.send_message("Ici Jisu CALENRONDO, en direct du journal de Néomuna !")
 
 
@@ -71,14 +86,18 @@ async def check_new_videos():
             logging.info("Posted to channel !")
         else:
             logging.info("No new video, proceed...")
-        time.sleep(5)
+        await asyncio.sleep(10)
     logging.info("Finished !")
     logging.info("Retrying in 10 minutes !")
 
 
 @client.tree.command(name="add_youtube_channel")
 @commands.has_role("Administrateur Echo[Systèmes]")
-async def add_youtube_channel(interaction: discord.Interaction, channel_id: str, channel_name: str):
+async def add_youtube_channel(interaction: discord.Interaction, channel_id: str, channel_name: str, discord_channel: discord.TextChannel = None):
+    if not interaction.guild:
+        await interaction.response.send_message("La femme à qui tu dis ?")
+        return
+    
     data = open_json()
 
     # Check if channel exist in json file
@@ -91,7 +110,7 @@ async def add_youtube_channel(interaction: discord.Interaction, channel_id: str,
     data[str(channel_id)] = {}
     data[str(channel_id)]["channel_name"] = channel_name
     data[str(channel_id)]["latest_video_url"] = "None"
-    data[str(channel_id)]["notifying_discord_channel"]= 697858472548761692
+    data[str(channel_id)]["notifying_discord_channel"] = discord_channel.id if discord_channel is not None else 1080375625031884800
 
     data = save_json(data)
     await interaction.response.send_message(f"Je viens d'ajouter la chaîne Youtube {channel_name} à mon répertoire !")
@@ -100,6 +119,10 @@ async def add_youtube_channel(interaction: discord.Interaction, channel_id: str,
 @client.tree.command(name="remove_youtube_channel")
 @commands.has_role("Administrateur Echo[Systèmes]")
 async def remove_youtube_channel(interaction: discord.Interaction, channel_name: str):
+    if not interaction.guild:
+        await interaction.response.send_message("La femme à qui tu dis ?")
+        return
+    
     data = open_json()
 
     # Check if channel exist in json file 
@@ -116,6 +139,10 @@ async def remove_youtube_channel(interaction: discord.Interaction, channel_name:
 @client.tree.command(name="stop_notifying")
 @commands.has_role("Administrateur Echo[Systèmes]")
 async def stop_notifying(interaction: discord.Interaction):
+    if not interaction.guild:
+        await interaction.response.send_message("La femme à qui tu dis ?")
+        return
+    
     check_new_videos.stop()
     await interaction.response.send_message("Les notifications vidéos sont maintenant suspendus")
 
@@ -123,6 +150,10 @@ async def stop_notifying(interaction: discord.Interaction):
 @client.tree.command(name="start_notifying")
 @commands.has_role("Administrateur Echo[Systèmes]")
 async def start_notifying(interaction: discord.Interaction):
+    if not interaction.guild:
+        await interaction.response.send_message("La femme à qui tu dis ?")
+        return
+    
     await interaction.response.send_message("Je vais maintenant notifier les nouvelles vidéos mise en ligne")
     check_new_videos.start()
 
