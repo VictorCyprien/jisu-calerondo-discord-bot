@@ -12,13 +12,13 @@ logging.basicConfig(level = logging.INFO)
 
 
 def open_json():
-    with open("youtube_data.json", 'r') as file:
+    with open("data/youtube_data.json", 'r') as file:
         data = json.load(file)
     return data
 
 
 def save_json(data):
-    with open("youtube_data.json", "w") as file:
+    with open("data/youtube_data.json", "w") as file:
         json.dump(data, file)
     return data
 
