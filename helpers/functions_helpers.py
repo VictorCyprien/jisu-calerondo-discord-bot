@@ -53,8 +53,8 @@ def get_last_video_id_from_channel(youtube_channel):
 
 
 def build_msg(channel_name, latest_video_url):
-    msg = "@everyone Ici Jisu CALENRONDO, en direct du journal de Néomuna !\n"
-    msg += f"Une nouvelle vidéo de la chaîne de {channel_name} viens d'être mise en ligne\n{latest_video_url}"
+    msg = "Ici Jisu CALENRONDO, en direct du journal de Néomuna !\n"
+    msg += f"Une nouvelle vidéo de la chaîne de {channel_name} viens d'être mise en ligne\n{latest_video_url}\n"
     return msg
 
 
